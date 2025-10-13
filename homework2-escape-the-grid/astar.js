@@ -96,7 +96,12 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ------------------ A* Algorithm ------------------
-function heuristic(a,b){ return Math.abs(a.r-b.r)+Math.abs(a.c-b.c); }
+//function heuristic(a,b){ return Math.abs(a.r-b.r)+Math.abs(a.c-b.c); }
+ function heuristic(a, b) {
+  const dx = Math.abs(a.r - b.r);
+  const dy = Math.abs(a.c - b.c);
+  return Math.max(dx, dy) + (Math.SQRT2 - 1) * Math.min(dx, dy);
+ }
 
 async function runAStar() {
   steps = 0;
@@ -125,7 +130,14 @@ async function runAStar() {
 
     for(const neighbor of getNeighbors(current)){
       if(neighbor.blocked || neighbor.element.classList.contains('closed')) continue;
-      const tentativeG = current.g + (neighbor.weight || 1);
+
+      let cellweight = neighbor.weight || 1;
+      let diagonal = (neighbor.r !== current.r && neighbor.c !== current.c);
+      if (diagonal) {
+        cellweight = cellweight * Math.SQRT2;
+      }
+      const tentativeG = current.g + cellweight;
+
       if(tentativeG < neighbor.g){
         neighbor.g = tentativeG;
         neighbor.h = heuristic(neighbor, goalNode);
@@ -144,7 +156,8 @@ async function runAStar() {
 }
 
 function getNeighbors(node){
-  const dirs = [[-1,0],[1,0],[0,-1],[0,1]]; // 4 directions
+  // const dirs = [[-1,0],[1,0],[0,-1],[0,1]]; // 4 directions
+  const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]; // 8 directions
   const neighbors = [];
   for(const [dr,dc] of dirs){
     const r = node.r + dr, c = node.c + dc;
