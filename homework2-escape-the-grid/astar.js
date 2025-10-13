@@ -62,6 +62,7 @@ function createGrid() {
         c,
         element: cell,
         blocked: cell.classList.contains('blocked'),
+        weight,
         g: Infinity,
         h: 0,
         f: Infinity,
@@ -131,12 +132,12 @@ async function runAStar() {
     for(const neighbor of getNeighbors(current)){
       if(neighbor.blocked || neighbor.element.classList.contains('closed')) continue;
 
-      let cellweight = neighbor.weight || 1;
-      let diagonal = (neighbor.r !== current.r && neighbor.c !== current.c);
+      let moveCost = (neighbor.weight !== undefined) ? neighbor.weight : 1;
+      let diagonal = (neighbor.r !== current.r) && (neighbor.c !== current.c);
       if (diagonal) {
-        cellweight = cellweight * Math.SQRT2;
+        moveCost = moveCost * Math.SQRT2;
       }
-      const tentativeG = current.g + cellweight;
+      const tentativeG = current.g + moveCost;
 
       if(tentativeG < neighbor.g){
         neighbor.g = tentativeG;
