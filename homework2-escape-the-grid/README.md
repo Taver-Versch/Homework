@@ -10,4 +10,6 @@
 
 ### Observations about pathfinding behavior:
 
-- 
+- After adding the ablity to go diagonally, it got a lot smarter and faster. It is also very satisfying.  
+
+![alt text](image.png)
