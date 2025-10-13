@@ -43,6 +43,20 @@ function createGrid() {
 
       gridElement.appendChild(cell);
 
+
+      // Assign weights to non-blocked cells [10% mud (2), 5% sand (3), rest normal (1)]
+      let weight = 1;
+      if (!cell.classList.contains('blocked')) {
+        const rand = Math.random();
+        if (rand < 0.10) { 
+          weight = 2;
+          cell.classList.add('mud');
+        } else if (rand < 0.15) {
+          weight = 3;
+          cell.classList.add('sand');
+        }
+      }
+
       row.push({
         r,
         c,
@@ -111,7 +125,7 @@ async function runAStar() {
 
     for(const neighbor of getNeighbors(current)){
       if(neighbor.blocked || neighbor.element.classList.contains('closed')) continue;
-      const tentativeG = current.g + 1;
+      const tentativeG = current.g + (neighbor.weight || 1);
       if(tentativeG < neighbor.g){
         neighbor.g = tentativeG;
         neighbor.h = heuristic(neighbor, goalNode);

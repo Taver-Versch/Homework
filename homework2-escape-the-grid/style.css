@@ -64,3 +64,7 @@ button:hover { background-color: #333366; }
 .cell.closed { background: #9a8c98; }
 .cell.path { background: #6a4c93; box-shadow: 0 0 10px #6a4c93; }
 .cell:hover { box-shadow: 0 0 6px #00ffc3; }
+
+/* Weighted Terrain */
+.cell.mud { background: #835f0c; }
+.cell.sand { background: #dbd07e; }
