@@ -9,7 +9,7 @@
 <body>
   <div class="page">
     <header class="header">
-        <h1>🎃</h1>
+      <h1>🎃</h1>
       <h1>Monster Bash</h1>
     </header>
 
@@ -18,32 +18,51 @@
         <div class="card">
           <h2>Hero</h2>
           <p><strong>HP ❤️:</strong> 100 / 100</p>
-          <p><strong>Energy ⚡:</strong> 20</p>
+          <p><strong>Energy ⚡:</strong> 100</p>
         </div>
 
         <div class="card">
           <!--<h2>Monster</h2>-->
-          <h2><strong>🧟 Zombie</strong></h2>
-          <p><strong>HP ❤️:</strong> 22 / 22</p>
+          <h2><strong>[Monster Name]</strong></h2>
+          <p><strong>HP ❤️:</strong> [Monster HP]</p>
         </div>
       </section>
 
       <section class="attacks">
         <h3>Choose an attack</h3>
         <div class="attack-buttons">
-          <button type="button" class="btn">⚪ Wind Strike (2⚡ | Dmg 4)</button>
-          <button type="button" class="btn">⚕️ Water Bolt (5⚡ | Dmg 11)</button>
-          <button type="button" class="btn">💢 Fire Wave (13⚡ | Dmg 20)</button>
+          <button type="button" class="button">⚪ Wind Strike (2⚡ | Dmg 4)</button>
+          <button type="button" class="button">⚕️ Water Bolt (5⚡ | Dmg 11)</button>
+          <button type="button" class="button">💢 Fire Wave (13⚡ | Dmg 20)</button>
         </div>
       </section>
 
       <section class="log">
         <h3>Battle Log</h3>
         <div class="log-box">
-          <div class="log-line">Hero used an attack for 10 damage!</div>
+          <div class="log-line"></div>
         </div>
       </section>
+
+        <section id="goal-controls" class="goal-section">
+        <h3>Goal</h3>
+        <div class="goal-row">
+            <select id="goalSelect" name="goal" class="goal-select" required>
+            <option value="" disabled selected>Select a goal…</option>
+            <option value="min_energy">
+                Minimize total energy used to defeat all the monsters
+            </option>
+            <option value="max_damage" data-energy-cap="100">
+                Maximize total damage dealt within a fixed energy limit
+            </option>
+            </select>
+            <button type="button" class="button" id="btnPlan">Run Plan</button>
+        </div>
+        </section>
     </main>
   </div>
 </body>
 </html>
+
+<script src="monstermash.js" defer></script>
+
