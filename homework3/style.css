@@ -1,0 +1,96 @@
+:root {
+  --panel: #161922;
+  --text: #f1f5f9;
+  --muted: #ffffff;
+  --border: #ae6210;
+  --orange: #ae6210;
+  --hover_color: #50433d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  font-family: sans-serif;
+  color: var(--text);
+  background: #000000
+}
+
+button { font-family: inherit; }
+
+.page { width: 100%; max-width: 900px; }
+
+.header { text-align: center; margin-bottom: 18px; }
+.header h1 {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.content { display: grid; gap: 18px; justify-items: center; }
+
+.cards {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: center;
+}
+.card h2 {
+  margin: 6px 0 10px;
+  font-size: 25px;
+  color: var(--orange);
+  font-weight: 700;
+}
+.monster-name { color: var(--orange); font-weight: 700; }
+
+.attacks, .log { width: 100%; display: grid; gap: 10px; justify-items: center; }
+.attacks h3, .log h3 { margin: 0; font-size: 25px; color: var(--muted); font-weight: 700; }
+
+.attack-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.btn {
+  border: none;
+  background: var(--orange);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.btn:hover { background: var(--hover_color); transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.log-box {
+  width: 100%;
+  max-width: 900px;
+  min-height: 110px;
+  background: var(--panel);
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.log-line { padding: 6px 0; border-bottom: 1px dashed #23304d; font-size: 14px; }
+.log-line:last-child { border-bottom: none; }
+
+@media (max-width: 650px) {
+  .cards { grid-template-columns: 1fr; }
+  .attack-buttons { grid-template-columns: 1fr; }
+}
