@@ -25,7 +25,16 @@ function shuffleCopy(array) {
   return result;
 }
 
-function log(text) {
+function randomizedHp(baseHp) {
+  const min = 0.8;
+  const max = 1.2;
+  const randomPercent = Math.random() * (max - min) + min;
+  const newHp = baseHp * randomPercent;
+  return Math.max(1, Math.round(newHp));
+}
+
+
+function battleLog(text) {
   const logBox = selectOne(".log-box");
   if (!logBox) return;
   const line = document.createElement("div");
@@ -128,15 +137,14 @@ function goal() {
   if (goalSelect) {
     goalSelect.addEventListener("change", () => {
       state.goal = goalSelect.value || "min_energy";
-      log(`Goal set: ${state.goal}`);
+      battleLog(`Goal set: ${state.goal}`);
     });
   }
   const planButton = selectOne("#btnPlan");
   if (planButton) {
     planButton.addEventListener("click", () => {
-      log("Pre-Battle Plan (randomized order this run):");
       state.monsters.forEach((monster, index) =>
-        log(`${index + 1}. ${monster.icon} ${monster.name} (${monster.hp > 0 ? "Alive" : "Defeated"})`)
+        battleLog(`${index + 1}. ${monster.icon} ${monster.name} (${monster.hp > 0 ? "Alive" : "Defeated"})`)
       );
       monsterLineup();
     });
@@ -151,8 +159,8 @@ function newRun() {
       icon: monsterType.icon,
       counterMinDamage: monsterType.counterMinDamage,
       counterMaxDamage: monsterType.counterMaxDamage,
-      maxHp: monsterType.baseHp,
-      hp: monsterType.baseHp
+      maxHp: randomizedHp(monsterType.baseHp),
+      hp: 0
     }))
     .map(monster => ({ ...monster, hp: monster.maxHp }));
   state.currentMonsterIndex = 0;
@@ -160,10 +168,9 @@ function newRun() {
   monsterCard();
   setMonsterList();
   attackButtons();
-  log("A new spooky run begins!");
 }
 
-function currentMonster() {
+function getCurrentMonster() {
   return state.monsters[state.currentMonsterIndex];
 }
 
@@ -186,14 +193,14 @@ function onAttack(moveId) {
   const move = attacks.find(move => move.id === moveId);
   if (!move) return;
 
-  const currentMonster = currentMonster();
-  if (!currentMonster) { log("There are no monsters left. 🎉"); return; }
-  if (state.hero.hp <= 0) { log("You are defeated! 💀"); return; }
-  if (state.hero.energy < move.energy) { log(`Not enough energy for ${move.name}.`); return; }
+  const currentMonster = getCurrentMonster();
+  if (!currentMonster) { battleLog("There are no monsters left. 🎉"); return; }
+  if (state.hero.hp <= 0) { battleLog("You are defeated! 💀"); return; }
+  if (state.hero.energy < move.energy) { battleLog(`Not enough energy for ${move.name}.`); return; }
 
   state.hero.energy -= move.energy;
   currentMonster.hp = Math.max(0, currentMonster.hp - move.damage);
-  log(`Used ${move.name}: dealt ${move.damage} to ${currentMonster.name}.`);
+  battleLog(`Used ${move.name}: dealt ${move.damage} to ${currentMonster.name}.`);
   updateHero();
   updateMonster();
 
@@ -201,29 +208,29 @@ function onAttack(moveId) {
     const counterDamage = randCounterDmg(currentMonster);
     if (counterDamage > 0) {
       state.hero.hp = Math.max(0, state.hero.hp - counterDamage);
-      log(`${currentMonster.name} strikes back for ${counterDamage} damage!`);
+      battleLog(`${currentMonster.name} strikes back for ${counterDamage} damage!`);
       updateHero();
     }
   }
 
   if (state.hero.energy < 3) {
-    log("You have run out of usable energy! 💀");
-    log("You were defeated due to exhaustion.");
+    battleLog("You have run out of usable energy! 💀");
+    battleLog("You were defeated due to exhaustion.");
     state.hero.hp = 0;
     updateHero();
     return;
   }
 
   if (currentMonster.hp <= 0) {
-    log(`${currentMonster.name} is defeated!`);
+    battleLog(`${currentMonster.name} is defeated!`);
     const moreRemain = nextMonster();
     updateMonster();
-    if (!moreRemain) { log(`You defeated all monsters with ${state.hero.energy} energy left! 🎉`); return; }
+    if (!moreRemain) { battleLog(`You defeated all monsters with ${state.hero.energy} energy left! 🎉`); return; }
     monsterCard();
     updateMonster();
   }
 
-  if (state.hero.hp <= 0) log("You were defeated!");
+  if (state.hero.hp <= 0) battleLog("You were defeated!");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
