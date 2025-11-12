@@ -1,13 +1,13 @@
 const attacks = Object.freeze([
-  { id: "wind_strike", name: "Wind Strike", energy: 3, damage: 5, icon: "⚪" },
-  { id: "water_bolt", name: "Water Bolt", energy: 7, damage: 11, icon: "💧" },
-  { id: "fire_wave", name: "Fire Wave", energy: 13, damage: 20, icon: "💢" }
+  { id: "wind_strike", name: "Wind Strike", energy: 4, damage: 4, icon: "⚪" },
+  { id: "water_bolt", name: "Water Bolt", energy: 8, damage: 11, icon: "💧" },
+  { id: "fire_wave", name: "Fire Wave", energy: 13, damage: 21, icon: "💢" }
 ]);
 
 const monsters = Object.freeze([
   { id: "zombie", name: "Zombie", baseHp: 22, icon: "🧟", counterMinDamage: 1, counterMaxDamage: 5 },
-  { id: "ghost", name: "Ghost", baseHp: 25, icon: "👻", counterMinDamage: 3, counterMaxDamage: 10 },
-  { id: "vampyre", name: "Vampyre", baseHp: 40, icon: "🧛", counterMinDamage: 5, counterMaxDamage: 17 },
+  { id: "ghost", name: "Ghost", baseHp: 25, icon: "👻", counterMinDamage: 3, counterMaxDamage: 7 },
+  { id: "vampyre", name: "Vampyre", baseHp: 40, icon: "🧛", counterMinDamage: 5, counterMaxDamage: 10 },
   { id: "pumpkin", name: "Pumpkin", baseHp: 1, icon: "🎃", counterMinDamage: 0, counterMaxDamage: 5 }
 ]);
 
@@ -135,6 +135,7 @@ function attackButtons() {
 function goal() {
   const goalSelect = selectOne("#goalSelect");
   if (goalSelect) {
+    state.goal = goalSelect.value || "min_energy";
     goalSelect.addEventListener("change", () => {
       state.goal = goalSelect.value || "min_energy";
       battleLog(`Goal set: ${state.goal}`);
@@ -143,9 +144,7 @@ function goal() {
   const planButton = selectOne("#btnPlan");
   if (planButton) {
     planButton.addEventListener("click", () => {
-      state.monsters.forEach((monster, index) =>
-        battleLog(`${index + 1}. ${monster.icon} ${monster.name} (${monster.hp > 0 ? "Alive" : "Defeated"})`)
-      );
+      computePlanAndShow();
       monsterLineup();
     });
   }
@@ -194,8 +193,8 @@ function onAttack(moveId) {
   if (!move) return;
 
   const currentMonster = getCurrentMonster();
-  if (!currentMonster) { battleLog("There are no monsters left. 🎉"); return; }
-  if (state.hero.hp <= 0) { battleLog("You are defeated! 💀"); return; }
+  if (!currentMonster) { battleLog("There are no monsters left."); return; }
+  if (state.hero.hp <= 0) { battleLog("You are defeated!"); return; }
   if (state.hero.energy < move.energy) { battleLog(`Not enough energy for ${move.name}.`); return; }
 
   state.hero.energy -= move.energy;
@@ -208,14 +207,14 @@ function onAttack(moveId) {
     const counterDamage = randCounterDmg(currentMonster);
     if (counterDamage > 0) {
       state.hero.hp = Math.max(0, state.hero.hp - counterDamage);
-      battleLog(`${currentMonster.name} strikes back for ${counterDamage} damage!`);
+      battleLog(`${currentMonster.name} hits you back for ${counterDamage} damage!`);
       updateHero();
     }
   }
 
   if (state.hero.energy < 3) {
-    battleLog("You have run out of usable energy! 💀");
-    battleLog("You were defeated due to exhaustion.");
+    battleLog("You have run out of usable energy!");
+    battleLog("You were defeated due to tiredness.");
     state.hero.hp = 0;
     updateHero();
     return;
@@ -225,13 +224,97 @@ function onAttack(moveId) {
     battleLog(`${currentMonster.name} is defeated!`);
     const moreRemain = nextMonster();
     updateMonster();
-    if (!moreRemain) { battleLog(`You defeated all monsters with ${state.hero.energy} energy left! 🎉`); return; }
+    if (!moreRemain) { battleLog(`You defeated all monsters with ${state.hero.energy} energy left!`); return; }
     monsterCard();
     updateMonster();
   }
 
   if (state.hero.hp <= 0) battleLog("You were defeated!");
 }
+
+function dpMinEnergyForHp(targetHp) {
+  const maxHp = targetHp;
+  const dp = Array(maxHp + 1).fill(Infinity);
+  const choice = Array(maxHp + 1).fill(-1);
+  dp[0] = 0;
+  for (let hp = 1; hp <= maxHp; hp++) {
+    for (let i = 0; i < attacks.length; i++) {
+      const a = attacks[i];
+      const prev = Math.max(0, hp - a.damage);
+      const cost = dp[prev] + a.energy;
+      if (cost < dp[hp] || (cost === dp[hp] && (choice[hp] < 0 || a.energy < attacks[choice[hp]].energy))) {
+        dp[hp] = cost;
+        choice[hp] = i;
+      }
+    }
+  }
+  const seq = [];
+  let hp = maxHp;
+  while (hp > 0 && choice[hp] >= 0) {
+    const i = choice[hp];
+    seq.push(attacks[i]);
+    hp = Math.max(0, hp - attacks[i].damage);
+  }
+  return { energy: dp[maxHp], sequence: seq.reverse(), table: dp };
+}
+
+function buildPlanMinEnergy() {
+  const steps = [];
+  let totalEnergy = 0;
+  for (let k = 0; k < state.monsters.length; k++) {
+    const monster = state.monsters[k];
+    const r = dpMinEnergyForHp(monster.hp);
+    totalEnergy += r.energy;
+    steps.push({ monsterIndex: k, monsterName: monster.name, sequence: r.sequence, energy: r.energy });
+  }
+  return { totalEnergy, steps };
+}
+
+function dpMaxDamageGivenEnergy(energyBudget) {
+  const dp = Array(energyBudget + 1).fill(0);
+  const choice = Array(energyBudget + 1).fill(-1);
+  for (let e = 1; e <= energyBudget; e++) {
+    for (let i = 0; i < attacks.length; i++) {
+      const a = attacks[i];
+      if (a.energy <= e) {
+        const cand = dp[e - a.energy] + a.damage;
+        if (cand > dp[e] || (cand === dp[e] && (choice[e] < 0 || a.energy < attacks[choice[e]].energy))) {
+          dp[e] = cand;
+          choice[e] = i;
+        }
+      }
+    }
+  }
+  const seq = [];
+  let e = energyBudget;
+  while (e > 0 && choice[e] >= 0) {
+    const i = choice[e];
+    seq.push(attacks[i]);
+    e -= attacks[i].energy;
+  }
+  return { damage: dp[energyBudget], sequence: seq.reverse(), table: dp };
+}
+
+function computePlanAndShow() {
+  if (state.goal === "min_energy") {
+    const plan = buildPlanMinEnergy();
+    battleLog("Plan: minimize total energy");
+    for (let s = 0; s < plan.steps.length; s++) {
+      const step = plan.steps[s];
+      const monster = state.monsters[step.monsterIndex];
+      const names = step.sequence.map(mv => mv.name).join(", ");
+      battleLog(`${s + 1}. ${monster.icon} ${monster.name} — HP: ${monster.hp}/${monster.maxHp} → ${names} (Energy ${step.energy})`);
+    }
+    battleLog(`Total energy: ${plan.totalEnergy}`);
+  } else {
+    const plan = dpMaxDamageGivenEnergy(state.hero.energy);
+    const names = plan.sequence.map(mv => mv.name).join(", ");
+    battleLog("Plan: maximize damage within energy");
+    battleLog(`Moves: ${names}`);
+    battleLog(`Total damage: ${plan.damage}`);
+  }
+}
+
 
 document.addEventListener("DOMContentLoaded", () => {
   goal();
