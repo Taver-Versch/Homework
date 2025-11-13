@@ -1,9 +1,12 @@
+//attacks from osrs
 const attacks = Object.freeze([
   { id: "wind_strike", name: "Wind Strike", energy: 4, damage: 4, icon: "⚪" },
   { id: "water_bolt", name: "Water Bolt", energy: 8, damage: 11, icon: "💧" },
   { id: "fire_wave", name: "Fire Wave", energy: 13, damage: 21, icon: "💢" }
 ]);
 
+
+//Monsters from osrs
 const monsters = Object.freeze([
   { id: "zombie", name: "Zombie", baseHp: 22, icon: "🧟", counterMinDamage: 1, counterMaxDamage: 5 },
   { id: "ghost", name: "Ghost", baseHp: 25, icon: "👻", counterMinDamage: 3, counterMaxDamage: 7 },
@@ -11,10 +14,19 @@ const monsters = Object.freeze([
   { id: "pumpkin", name: "Pumpkin", baseHp: 1, icon: "🎃", counterMinDamage: 0, counterMaxDamage: 5 }
 ]);
 
-const hero = Object.freeze({ hp: 50, maxHp: 50, energy: 75 });
+const hero = Object.freeze({
+  hp: 50,
+  maxHp: 50,
+  energy: 75
+});
 
-function selectOne(selector, root = document) { return root.querySelector(selector); }
-function selectAll(selector, root = document) { return Array.from(root.querySelectorAll(selector)); }
+function selectOne(selector, root = document) {
+  return root.querySelector(selector);
+}
+
+function selectAll(selector, root = document) {
+  return Array.from(root.querySelectorAll(selector));
+}
 
 function shuffleCopy(array) {
   const result = array.slice();
@@ -45,7 +57,11 @@ function battleLog(text) {
 }
 
 const state = {
-  hero: { hp: hero.hp, maxHp: hero.maxHp, energy: hero.energy },
+  hero: {
+    hp: hero.hp,
+    maxHp: hero.maxHp,
+    energy: hero.energy
+  },
   monsters: [],
   currentMonsterIndex: 0,
   goal: "min_energy"
@@ -174,17 +190,22 @@ function getCurrentMonster() {
 }
 
 function nextMonster() {
-  while (state.currentMonsterIndex < state.monsters.length &&
-         state.monsters[state.currentMonsterIndex].hp <= 0) {
+  while (
+    state.currentMonsterIndex < state.monsters.length &&
+    state.monsters[state.currentMonsterIndex].hp <= 0
+  ) {
     state.currentMonsterIndex++;
   }
+
   return state.currentMonsterIndex < state.monsters.length;
 }
 
 function randCounterDmg(monster) {
   const min = Math.max(0, Number(monster.counterMinDamage) || 0);
   const max = Math.max(min, Number(monster.counterMaxDamage) || 0);
+
   if (max <= min) return min;
+
   return min + ((Math.random() * (max - min + 1)) | 0);
 }
 
@@ -236,38 +257,63 @@ function dpMinEnergyForHp(targetHp) {
   const maxHp = targetHp;
   const dp = Array(maxHp + 1).fill(Infinity);
   const choice = Array(maxHp + 1).fill(-1);
+
   dp[0] = 0;
+
   for (let hp = 1; hp <= maxHp; hp++) {
     for (let i = 0; i < attacks.length; i++) {
       const a = attacks[i];
       const prev = Math.max(0, hp - a.damage);
       const cost = dp[prev] + a.energy;
-      if (cost < dp[hp] || (cost === dp[hp] && (choice[hp] < 0 || a.energy < attacks[choice[hp]].energy))) {
+
+      if (
+        cost < dp[hp] ||
+        (cost === dp[hp] && (choice[hp] < 0 || a.energy < attacks[choice[hp]].energy))
+      ) {
         dp[hp] = cost;
         choice[hp] = i;
       }
     }
   }
+
   const seq = [];
   let hp = maxHp;
+
   while (hp > 0 && choice[hp] >= 0) {
     const i = choice[hp];
     seq.push(attacks[i]);
     hp = Math.max(0, hp - attacks[i].damage);
   }
-  return { energy: dp[maxHp], sequence: seq.reverse(), table: dp };
+
+  return {
+    energy: dp[maxHp],
+    sequence: seq.reverse(),
+    table: dp
+  };
 }
 
 function buildPlanMinEnergy() {
   const steps = [];
   let totalEnergy = 0;
+
   for (let k = 0; k < state.monsters.length; k++) {
     const monster = state.monsters[k];
-    const r = dpMinEnergyForHp(monster.hp);
-    totalEnergy += r.energy;
-    steps.push({ monsterIndex: k, monsterName: monster.name, sequence: r.sequence, energy: r.energy });
+    const result = dpMinEnergyForHp(monster.hp);
+
+    totalEnergy += result.energy;
+
+    steps.push({
+      monsterIndex: k,
+      monsterName: monster.name,
+      sequence: result.sequence,
+      energy: result.energy
+    });
   }
-  return { totalEnergy, steps };
+
+  return {
+    totalEnergy,
+    steps
+  };
 }
 
 function dpMaxDamageGivenEnergy(energyBudget) {
@@ -298,17 +344,24 @@ function dpMaxDamageGivenEnergy(energyBudget) {
 function computePlanAndShow() {
   if (state.goal === "min_energy") {
     const plan = buildPlanMinEnergy();
+
     battleLog("Plan: minimize total energy");
+
     for (let s = 0; s < plan.steps.length; s++) {
       const step = plan.steps[s];
       const monster = state.monsters[step.monsterIndex];
       const names = step.sequence.map(mv => mv.name).join(", ");
-      battleLog(`${s + 1}. ${monster.icon} ${monster.name} — HP: ${monster.hp}/${monster.maxHp} → ${names} (Energy ${step.energy})`);
+
+      battleLog(
+        `${s + 1}. ${monster.icon} ${monster.name} — HP: ${monster.hp}/${monster.maxHp} → ${names} (Energy ${step.energy})`
+      );
     }
+
     battleLog(`Total energy: ${plan.totalEnergy}`);
   } else {
     const plan = dpMaxDamageGivenEnergy(state.hero.energy);
     const names = plan.sequence.map(mv => mv.name).join(", ");
+
     battleLog("Plan: maximize damage within energy");
     battleLog(`Moves: ${names}`);
     battleLog(`Total damage: ${plan.damage}`);

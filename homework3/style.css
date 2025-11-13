@@ -7,7 +7,9 @@
   --hover_color: #50433d;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -17,21 +19,34 @@ body {
   place-items: center;
   font-family: sans-serif;
   color: var(--text);
-  background: #000000
+  background: #000000;
 }
 
-button { font-family: inherit; }
+button {
+  font-family: inherit;
+}
 
-.page { width: 100%; max-width: 900px; }
+.page {
+  width: 100%;
+  max-width: 900px;
+}
 
-.header { text-align: center; margin-bottom: 18px; }
+.header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
 .header h1 {
   color: var(--orange);
   font-weight: 600;
   font-size: 60px;
 }
 
-.content { display: grid; gap: 18px; justify-items: center; }
+.content {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
 
 .cards {
   width: 100%;
@@ -47,16 +62,34 @@ button { font-family: inherit; }
   padding: 16px 18px;
   text-align: center;
 }
+
 .card h2 {
   margin: 6px 0 10px;
   font-size: 25px;
   color: var(--orange);
   font-weight: 700;
 }
-.monster-name { color: var(--orange); font-weight: 700; }
 
-.attacks, .log { width: 100%; display: grid; gap: 10px; justify-items: center; }
-.attacks h3, .log h3 { margin: 0; font-size: 25px; color: var(--muted); font-weight: 700; }
+.monster-name {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.attacks,
+.log {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.attacks h3,
+.log h3 {
+  margin: 0;
+  font-size: 25px;
+  color: var(--muted);
+  font-weight: 700;
+}
 
 .attack-buttons {
   display: grid;
@@ -67,18 +100,24 @@ button { font-family: inherit; }
 }
 
 .button {
-  border: none;
+  border: 3px solid var(--border);
   background: var(--orange);
-  color: #fff;
+  color: #ffffff;
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
   font-weight: 700;
-  border: 3px solid var(--border);
 }
-.button:hover { background: var(--hover_color); transform: translateY(-2px); }
-.button:active { transform: translateY(0); }
+
+.button:hover {
+  background: var(--hover_color);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
 
 .log-box {
   width: 100%;
@@ -89,14 +128,26 @@ button { font-family: inherit; }
   border-radius: 12px;
   padding: 10px 12px;
 }
-.log-line { padding: 6px 0; border-bottom: 1px dashed #23304d; font-size: 14px; }
-.log-line:last-child { border-bottom: none; }
 
-@media (max-width: 650px) {
-  .cards { grid-template-columns: 1fr; }
-  .attack-buttons { grid-template-columns: 1fr; }
+.log-line {
+  padding: 6px 0;
+  border-bottom: 1px dashed #23304d;
+  font-size: 14px;
 }
 
+.log-line:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 650px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .attack-buttons {
+    grid-template-columns: 1fr;
+  }
+}
 
 .goal-section {
   display: grid;
@@ -120,7 +171,7 @@ button { font-family: inherit; }
 
 .goal-select {
   background: var(--orange);
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 10px;
   padding: 8px 12px;
@@ -131,7 +182,7 @@ button { font-family: inherit; }
 .monster-list {
   margin-bottom: 16px;
   text-align: center;
-  color: #fff;
+  color: #ffffff;
 }
 
 .monster-row {
