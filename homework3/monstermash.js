@@ -20,13 +20,15 @@ const hero = Object.freeze({
   energy: 75
 });
 
-function selectOne(selector, root = document) {
-  return root.querySelector(selector);
-}
+const DOM = {
+  one(selector, root = document) {
+    return root.querySelector(selector);
+  },
 
-function selectAll(selector, root = document) {
-  return Array.from(root.querySelectorAll(selector));
-}
+  all(selector, root = document) {
+    return Array.from(root.querySelectorAll(selector));
+  }
+};
 
 function shuffleCopy(array) {
   const result = array.slice();
@@ -47,7 +49,7 @@ function randomizedHp(baseHp) {
 
 
 function battleLog(text) {
-  const logBox = selectOne(".log-box");
+  const logBox = DOM.one(".log-box");
   if (!logBox) return;
   const line = document.createElement("div");
   line.className = "log-line";
@@ -68,12 +70,12 @@ const state = {
 };
 
 function setMonsterList() {
-  let listContainer = selectOne("#monsterList");
+  let listContainer = DOM.one("#monsterList");
   if (!listContainer) {
     const container = document.createElement("div");
     container.id = "monsterList";
     container.className = "monster-list";
-    const cards = selectOne(".cards");
+    const cards = DOM.one(".cards");
     if (cards && cards.parentNode) cards.parentNode.insertBefore(container, cards);
     listContainer = container;
   }
@@ -81,7 +83,7 @@ function setMonsterList() {
 }
 
 function monsterLineup() {
-  const listContainer = selectOne("#monsterList");
+  const listContainer = DOM.one("#monsterList");
   if (!listContainer) return;
   listContainer.innerHTML = "<h3>👹Monsters!!👹</h3>";
   const row = document.createElement("div");
@@ -98,7 +100,7 @@ function monsterLineup() {
 }
 
 function heroCard() {
-  const heroCard = selectOne(".cards .card:nth-child(1)");
+  const heroCard = DOM.one(".cards .card:nth-child(1)");
   if (!heroCard) return;
   heroCard.innerHTML = `
     <h2>⚜️ Hero</h2>
@@ -110,7 +112,7 @@ function heroCard() {
 
 function monsterCard() {
   const currentMonster = state.monsters[state.currentMonsterIndex];
-  const monsterCard = selectOne(".cards .card:nth-child(2)");
+  const monsterCard = DOM.one(".cards .card:nth-child(2)");
   if (!monsterCard || !currentMonster) return;
   monsterCard.innerHTML = `
     <h2><strong>${currentMonster.icon} ${currentMonster.name}</strong></h2>
@@ -120,8 +122,8 @@ function monsterCard() {
 }
 
 function updateHero() {
-  const heroHp = selectOne("#heroHp");
-  const heroEnergy = selectOne("#heroEnergy");
+  const heroHp = DOM.one("#heroHp");
+  const heroEnergy = DOM.one("#heroEnergy");
   if (heroHp) heroHp.textContent = state.hero.hp;
   if (heroEnergy) heroEnergy.textContent = state.hero.energy;
 }
@@ -129,8 +131,8 @@ function updateHero() {
 function updateMonster() {
   const currentMonster = state.monsters[state.currentMonsterIndex];
   if (currentMonster) {
-    const monsterHp = selectOne("#monsterHp");
-    const monsterMax = selectOne("#monsterMax");
+    const monsterHp = DOM.one("#monsterHp");
+    const monsterMax = DOM.one("#monsterMax");
     if (monsterHp) monsterHp.textContent = currentMonster.hp;
     if (monsterMax) monsterMax.textContent = currentMonster.maxHp;
   }
@@ -138,18 +140,18 @@ function updateMonster() {
 }
 
 function attackButtons() {
-  const buttons = selectAll(".attack-buttons .button");
+  const buttons = DOM.all(".attack-buttons .button");
   buttons.forEach((button, index) => {
-    const move = attacks[index];
-    if (!move) return;
-    button.dataset.moveId = move.id;
-    button.textContent = `${move.icon} ${move.name} (${move.energy}⚡ | Dmg ${move.damage})`;
-    button.onclick = () => onAttack(move.id);
+    const attack = attacks[index];
+    if (!attack) return;
+    button.dataset.moveId = attack.id;
+    button.textContent = `${attack.icon} ${attack.name} (${attack.energy}⚡ | Dmg ${attack.damage})`;
+    button.onclick = () => onAttack(attack.id);
   });
 }
 
 function goal() {
-  const goalSelect = selectOne("#goalSelect");
+  const goalSelect = DOM.one("#goalSelect");
   if (goalSelect) {
     state.goal = goalSelect.value || "min_energy";
     goalSelect.addEventListener("change", () => {
@@ -157,7 +159,7 @@ function goal() {
       battleLog(`Goal set: ${state.goal}`);
     });
   }
-  const planButton = selectOne("#btnPlan");
+  const planButton = DOM.one("#btnPlan");
   if (planButton) {
     planButton.addEventListener("click", () => {
       computePlanAndShow();
@@ -210,17 +212,17 @@ function randCounterDmg(monster) {
 }
 
 function onAttack(moveId) {
-  const move = attacks.find(move => move.id === moveId);
-  if (!move) return;
+  const attack = attacks.find(attack => attack.id === moveId);
+  if (!attack) return;
 
   const currentMonster = getCurrentMonster();
   if (!currentMonster) { battleLog("There are no monsters left."); return; }
   if (state.hero.hp <= 0) { battleLog("You are defeated!"); return; }
-  if (state.hero.energy < move.energy) { battleLog(`Not enough energy for ${move.name}.`); return; }
+  if (state.hero.energy < attack.energy) { battleLog(`Not enough energy for ${attack.name}.`); return; }
 
-  state.hero.energy -= move.energy;
-  currentMonster.hp = Math.max(0, currentMonster.hp - move.damage);
-  battleLog(`Used ${move.name}: dealt ${move.damage} to ${currentMonster.name}.`);
+  state.hero.energy -= attack.energy;
+  currentMonster.hp = Math.max(0, currentMonster.hp - attack.damage);
+  battleLog(`Used ${attack.name}: dealt ${attack.damage} to ${currentMonster.name}.`);
   updateHero();
   updateMonster();
 
@@ -262,32 +264,32 @@ function dpMinEnergyForHp(targetHp) {
 
   for (let hp = 1; hp <= maxHp; hp++) {
     for (let i = 0; i < attacks.length; i++) {
-      const a = attacks[i];
-      const prev = Math.max(0, hp - a.damage);
-      const cost = dp[prev] + a.energy;
+      const attack = attacks[i];
+      const previousHP = Math.max(0, hp - attack.damage);
+      const energyCost = dp[previousHP] + attack.energy;
 
       if (
-        cost < dp[hp] ||
-        (cost === dp[hp] && (choice[hp] < 0 || a.energy < attacks[choice[hp]].energy))
+        energyCost < dp[hp] ||
+        (energyCost === dp[hp] && (choice[hp] < 0 || attack.energy < attacks[choice[hp]].energy))
       ) {
-        dp[hp] = cost;
+        dp[hp] = energyCost;
         choice[hp] = i;
       }
     }
   }
 
-  const seq = [];
+  const sequence = [];
   let hp = maxHp;
 
   while (hp > 0 && choice[hp] >= 0) {
     const i = choice[hp];
-    seq.push(attacks[i]);
+    sequence.push(attacks[i]);
     hp = Math.max(0, hp - attacks[i].damage);
   }
 
   return {
     energy: dp[maxHp],
-    sequence: seq.reverse(),
+    sequence: sequence.reverse(),
     table: dp
   };
 }
@@ -298,15 +300,15 @@ function buildPlanMinEnergy() {
 
   for (let k = 0; k < state.monsters.length; k++) {
     const monster = state.monsters[k];
-    const result = dpMinEnergyForHp(monster.hp);
+    const minEnergyForMonster = dpMinEnergyForHp(monster.hp);
 
-    totalEnergy += result.energy;
+    totalEnergy += minEnergyForMonster.energy;
 
     steps.push({
       monsterIndex: k,
       monsterName: monster.name,
-      sequence: result.sequence,
-      energy: result.energy
+      sequence: minEnergyForMonster.sequence,
+      energy: minEnergyForMonster.energy
     });
   }
 
@@ -319,26 +321,26 @@ function buildPlanMinEnergy() {
 function dpMaxDamageGivenEnergy(energyBudget) {
   const dp = Array(energyBudget + 1).fill(0);
   const choice = Array(energyBudget + 1).fill(-1);
-  for (let e = 1; e <= energyBudget; e++) {
+  for (let energy = 1; energy <= energyBudget; energy++) {
     for (let i = 0; i < attacks.length; i++) {
-      const a = attacks[i];
-      if (a.energy <= e) {
-        const cand = dp[e - a.energy] + a.damage;
-        if (cand > dp[e] || (cand === dp[e] && (choice[e] < 0 || a.energy < attacks[choice[e]].energy))) {
-          dp[e] = cand;
-          choice[e] = i;
+      const attack = attacks[i];
+      if (attack.energy <= energy) {
+        const damageTotal = dp[energy - attack.energy] + attack.damage;
+        if (damageTotal > dp[energy] || (damageTotal === dp[energy] && (choice[energy] < 0 || attack.energy < attacks[choice[energy]].energy))) {
+          dp[energy] = damageTotal;
+          choice[energy] = i;
         }
       }
     }
   }
-  const seq = [];
-  let e = energyBudget;
-  while (e > 0 && choice[e] >= 0) {
-    const i = choice[e];
-    seq.push(attacks[i]);
-    e -= attacks[i].energy;
+  const sequence = [];
+  let energyLeft = energyBudget;
+  while (energyLeft > 0 && choice[energyLeft] >= 0) {
+    const i = choice[energyLeft];
+    sequence.push(attacks[i]);
+    energyLeft -= attacks[i].energy;
   }
-  return { damage: dp[energyBudget], sequence: seq.reverse(), table: dp };
+  return { damage: dp[energyBudget], sequence: sequence.reverse(), table: dp };
 }
 
 function computePlanAndShow() {
