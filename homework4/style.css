@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'RunescapeUF';
+    src: url('osrs/runescape_bold.ttf') format('truetype');
+}
+
 body {
     background-image: url("osrs/background.png");
     background-size: cover;
@@ -5,13 +10,14 @@ body {
     background-repeat: no-repeat;
     margin: 0;
     padding: 0;
-    font-family: 'Courier New', monospace;
+    font-family: 'RunescapeUF', monospace;
     color: #c0c0c0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
+
 
 .menu-container {
     background: #2a2a2a;
