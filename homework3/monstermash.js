@@ -330,7 +330,8 @@ function dpMaxDamageGivenEnergy(energyBudget) {
           dp[energy] = damageTotal;
           choice[energy] = i;
         }
-      }
+    }
+
     }
   }
   const sequence = [];
@@ -369,7 +370,6 @@ function computePlanAndShow() {
     battleLog(`Total damage: ${plan.damage}`);
   }
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   goal();
