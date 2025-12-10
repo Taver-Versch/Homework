@@ -4,7 +4,7 @@ const table = Array.from({ length: TABLE_SIZE }, () => []);
 function hashKey(text) {
     let h = 0;
     for (let i = 0; i < text.length; i++) {
-        h = (h * 31 + text.charCodeAt(i)) % TABLE_SIZE;
+        h = (h + text.charCodeAt(i)) % TABLE_SIZE;
     }
     return h;
 }
@@ -49,19 +49,19 @@ function sortByName(list) {
 }
 
 function getMessage(id, text, show = true) {
-    const el = document.getElementById(id);
-    el.style.background = "rgba(0,0,0,0.75)";
-    el.style.color = "white";
-    el.style.textAlign = "center";
-    el.style.margin = "10px auto";
-    el.style.width = "60%";
+    const msg = document.getElementById(id);
+    msg.style.background = "rgba(0,0,0,0.75)";
+    msg.style.color = "white";
+    msg.style.textAlign = "center";
+    msg.style.margin = "10px auto";
+    msg.style.width = "60%";
 
     if (show) {
-        el.style.display = "block";
-        el.textContent = text;
+        msg.style.display = "block";
+        msg.textContent = text;
     } else {
-        el.style.display = "none";
-        el.textContent = "";
+        msg.style.display = "none";
+        msg.textContent = "";
     }
 }
 
@@ -74,11 +74,11 @@ function renderVault(list) {
 
 function addArtifact() {
     const [name, type, rarity, power] = ["artifactName", "artifactType", "artifactRarity", "artifactPower"].map(id => document.getElementById(id).value.trim());
-    const powerNum = parseInt(power, 10);
+    const powerRating = parseInt(power, 10);
 
     getMessage("addMessage", "", false);
     
-    if (!name || !type || !rarity || !power || isNaN(powerNum) || powerNum < 1 || powerNum > 100) {
+    if (!name || !type || !rarity || !power || isNaN(powerRating) || powerRating < 1 || powerRating > 100) {
         getMessage("addMessage", !name || !type || !rarity || !power ? "Please fill in all fields." : "Power must be 1-100.");
         return;
     }
@@ -88,7 +88,7 @@ function addArtifact() {
         return;
     }
 
-    storeArtifact({ name, type, rarity, power: powerNum });
+    storeArtifact({ name, type, rarity, power: powerRating });
     getMessage("addMessage", "Artifact added.");
     
     ["artifactName", "artifactType", "artifactRarity", "artifactPower"].forEach(id => document.getElementById(id).value = "");
