@@ -9,7 +9,3 @@
 ## Academic Integrity
 - These solutions are shared for portfolio and reference purposes only.  
 - If you are currently enrolled in a similar or the same course, do **not** submit this code as your own work.
-
-
-
-~taver
